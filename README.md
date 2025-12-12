@@ -101,8 +101,8 @@ AgentState:
 
 1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
-cd Cerina
+git clone Cerina-Foundry
+cd Cerina-Foundry
 ```
 
 2. **Install dependencies**
@@ -367,3 +367,4 @@ Email: rajrounak366@gmail.com
 ---
 
 **Built with ❤️ for the Cerina "Agentic Architect" Sprint**
+
