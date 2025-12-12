@@ -355,17 +355,19 @@ MIT License
 - **LangGraph**: For the agent orchestration framework
 - **Model Context Protocol**: For AI interoperability standards
 - **Anthropic**: For Claude and MCP documentation
-- **Groq**: For fast LLM inference
+- **OpenAI**: For LLM inference  ## we can also use grog for fast llm inference 
 
 ---
 
 ## 📧 Contact
 
 Name: Rounak Raj
+
 Email: rajrounak366@gmail.com
 
 ---
 
 **Built with ❤️ for the Cerina "Agentic Architect" Sprint**
+
 
 
