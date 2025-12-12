@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+        "cerina_foundry": {
+            "command": "uv",
+            "args": [
+                "run",
+                "--with",
+                "mcp[cli]",
+                "mcp",
+                "run",
+                "C:/Users/rouna/PycharmProjects/Cerina/MCP/cerina_mcp_tools.py"
+            ]
+        }
+    }
+}
