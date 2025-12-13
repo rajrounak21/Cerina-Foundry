@@ -221,6 +221,7 @@ Cerina/
 ├── agent/
 │   ├── drafter_agent.py       # Creates CBT exercises
 │   ├── safety_agent.py        # Safety validation
+|   |-- stream utils.py        # for seeing live genration of response
 │   ├── critic_agent.py        # Quality review
 │   ├── supervisor_agent.py    # Orchestration
 │   ├── prompts.py             # Agent prompts
@@ -368,6 +369,7 @@ Email: rajrounak366@gmail.com
 ---
 
 **Built with ❤️ for the Cerina "Agentic Architect" Sprint**
+
 
 
 
