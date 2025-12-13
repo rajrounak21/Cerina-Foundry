@@ -151,50 +151,80 @@ def stream_generate():
         return jsonify({'error': f"Invalid request: {str(e)}"}), 400
 
     def generate_stream(query, tid):
-        try:
-            if not query:
-                yield f"data: {json.dumps({'error': 'No query provided'})}\n\n"
-                return
+        import queue
+        import threading
+        from agent.stream_utils import set_stream_callback
+        
+        if not query:
+            yield f"data: {json.dumps({'error': 'No query provided'})}\n\n"
+            return
+        
+        print(f"Starting stream for thread {tid}")
+        
+        event_queue = queue.Queue()
+        
+        initial_state = {
+            "user_query": query,
+            "draft": "",
+            "previous_drafts": [],
+            "safety_notes": [],
+            "critic_notes": [],
+            "metadata": {
+                "iterations": 0, "safety_pass": True, "critic_pass": True,
+                "user_rejected": False, "edited_by_user": False
+            },
+            "final_output": "", "user_action": "", "edited_text": ""
+        }
+        
+        config = {"configurable": {"thread_id": tid}} 
+        
+        # Define callbacks
+        def token_callback(token):
+            event_queue.put({'type': 'token', 'token': token})
             
-            print(f"Starting stream for thread {tid}")
-            
-            initial_state = {
-                "user_query": query,
-                "draft": "",
-                "previous_drafts": [],
-                "safety_notes": [],
-                "critic_notes": [],
-                "metadata": {
-                    "iterations": 0, "safety_pass": True, "critic_pass": True,
-                    "user_rejected": False, "edited_by_user": False
-                },
-                "final_output": "", "user_action": "", "edited_text": ""
-            }
-            
-            config = {"configurable": {"thread_id": tid}}
-            
-            with get_checkpointer_context() as checkpointer:
-                graph = build_graph(checkpointer)
+        def run_graph():
+            # Set the thread-local callback
+            token = set_stream_callback(token_callback)
+            try:
+                with get_checkpointer_context() as checkpointer:
+                    graph = build_graph(checkpointer)
+                    
+                    print("Invoking graph stream...")
+                    for event in graph.stream(initial_state, config=config):
+                        event_queue.put({
+                            'type': 'node_complete',
+                            'data': event,
+                            'timestamp': datetime.now().isoformat()
+                        })
+                event_queue.put({'type': 'complete'})
+            except Exception as e:
+                print(f"Stream thread error: {e}")
+                traceback.print_exc()
+                event_queue.put({'type': 'error', 'error': str(e)})
+        
+        # Start background thread
+        thread = threading.Thread(target=run_graph)
+        thread.start()
+        
+        # Yield from queue
+        while True:
+            try:
+                # Wait for next event
+                event = event_queue.get(timeout=600)  # Long timeout for LLM generation
                 
-                print("Invoking graph stream...")
-                step_count = 0
-                for event in graph.stream(initial_state, config=config):
-                    step_count += 1
-                    event_data = {
-                        'type': 'node_complete',
-                        'data': event,
-                        'timestamp': datetime.now().isoformat()
-                    }
-                    yield f"data: {json.dumps(event_data)}\n\n"
-            
-            print(f"Stream complete, steps: {step_count}")
-            yield f"data: {json.dumps({'type': 'complete'})}\n\n"
-            
-        except Exception as e:
-            print(f"Stream error: {e}")
-            traceback.print_exc()
-            error_data = {'type': 'error', 'error': str(e)}
-            yield f"data: {json.dumps(error_data)}\n\n"
+                if event['type'] == 'complete':
+                    yield f"data: {json.dumps(event)}\n\n"
+                    break
+                elif event['type'] == 'error':
+                    yield f"data: {json.dumps(event)}\n\n"
+                    break
+                else:
+                    yield f"data: {json.dumps(event)}\n\n"
+                    
+            except queue.Empty:
+                # Timeout
+                yield f"data: {json.dumps({'type': 'error', 'error': 'Stream timed out'})}\n\n"
+                break
     
     return Response(stream_with_context(generate_stream(user_query, thread_id)), mimetype='text/event-stream')
 
