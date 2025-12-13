@@ -748,6 +748,9 @@
             const logEl = document.getElementById('stream-log');
             logEl.innerHTML = '<div class="log-entry">Initializing agent workflow...</div>';
 
+            // Reset stream buffer
+            currentStreamDraft = "";
+
             try {
                 const res = await fetch(`${API_BASE}/stream`, {
                     method: 'POST',
@@ -771,6 +774,8 @@
                                 const json = JSON.parse(line.substring(6));
                                 if (json.type === 'node_complete') {
                                     handleNodeEvent(json.data);
+                                } else if (json.type === 'token') {
+                                    handleTokenEvent(json.token);
                                 } else if (json.type === 'error') {
                                     logEl.innerHTML += `<div class="log-entry error">${json.error}</div>`;
                                 } else if (json.type === 'complete') {
@@ -781,6 +786,27 @@
                     }
                 }
             } catch (e) { console.error(e); }
+        }
+        
+        // Streaming buffer
+        let currentStreamDraft = "";
+
+        function handleTokenEvent(token) {
+            // First token? Clear "Generating..."
+            const draftEl = document.getElementById('draft-content');
+            if (currentStreamDraft === "") {
+               // If there was previous content, we might be overwriting it, which is expected for new draft generation
+               // But we should be careful not to wipe it if we are just appending?
+               // The drafter agent overrides the draft.
+               draftEl.innerHTML = "";
+            }
+            
+            currentStreamDraft += token;
+            
+            // Simple render - for very long docs this might be slow, but okay for MVP
+            draftEl.innerHTML = marked.parse(currentStreamDraft);
+            
+            // Auto-scroll logic could be added here
         }
 
         function handleNodeEvent(data) {
