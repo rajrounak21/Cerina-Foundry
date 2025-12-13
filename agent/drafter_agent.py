@@ -49,7 +49,7 @@ def drafter_agent(state):
         prompt = DRAFTER_PROMPT.format(user_query=state.user_query)
     
     # Generate the draft
-    new_draft = generate_response(prompt)
+    new_draft = generate_response(prompt, stream_output=True)
 
     # Build the updates dictionary
     updates = {
