@@ -1,4 +1,4 @@
-# Cerina Protocol Foundry 🧠
+# Cerina Protocol Foundry 
 
 > An autonomous multi-agent system for generating safe, empathetic CBT (Cognitive Behavioral Therapy) exercises using LangGraph, PostgreSQL persistence, and Model Context Protocol (MCP) integration.
 
@@ -28,7 +28,7 @@ Cerina is not just a chatbot—it's a **clinical foundry** powered by autonomous
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ### Agent Topology: Supervisor-Worker Pattern
 
