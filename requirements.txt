@@ -14,8 +14,8 @@ python-dotenv
 flask
 fastmcp
 mcp[cli]
-mcp-use
 tools
+mcp-use
 langsmith
 langgraph-cli[inmem]
 
