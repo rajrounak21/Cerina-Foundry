@@ -1,10 +1,10 @@
 openai
+Groq
 langchain
 langchain-community
 langchain-core
 langgraph
 langgraph-checkpoint-postgres
-Groq
 langchain-groq
 langchain-openai
 psycopg2-binary
